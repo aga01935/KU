@@ -67,7 +67,7 @@ class Polarization : public AliAnalysisTaskSE
         Float_t                 fDCAz1;
         Float_t                 fDCAxy2;
         Float_t                 fDCAz2;
-        TTree*                  fTreeP_TPC;
+        TTree*                  fTree;
         Int_t                   fTriggerClass;
         Float_t                 fPd;
         Float_t                 fPp;

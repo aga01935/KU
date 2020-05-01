@@ -69,7 +69,7 @@ ClassImp(Polarization) // classimp: necessary for root
 
 
 Polarization::Polarization() : AliAnalysisTaskSE(), 
-    fAOD(0), fOutputList(0), fHistPt(0) , fHistP_TPC(0), fTreeP_TPC(0),fPt(0),fM(0),fPt0(0),fPt1(0),fPIDResponse(0),fKaonSigma1(0),fKaonSigma0(0),fPiSigma1(0),fPiSigma0(0), fTPCcluster1(0), fEta1(0),fTPCcluster2(0), fEta2(0),fHistEtaCut(0),fHistITS(0), fHistChargeCut(0),fHistPtCut(0),fHistPairCut(0),fHistPIDCut(0),
+    fAOD(0), fOutputList(0), fHistPt(0) , fHistP_TPC(0), fTree(0),fPt(0),fM(0),fPt0(0),fPt1(0),fPIDResponse(0),fKaonSigma1(0),fKaonSigma0(0),fPiSigma1(0),fPiSigma0(0), fTPCcluster1(0), fEta1(0),fTPCcluster2(0), fEta2(0),fHistEtaCut(0),fHistITS(0), fHistChargeCut(0),fHistPtCut(0),fHistPairCut(0),fHistPIDCut(0),
     fHistFilterbitCut(0),fHistTriggerCut(0),fHistCounter(0),fDCAxy2(0),fDCAz2(0),fDCAxy1(0),fDCAz1(0) , fTriggerClass(0),fdEdX(0),fPd(0),fPp(0),fPtd(0),fZDCdata(0),fZNAenergy(0), fZNCenergy(0),fZDCAtime(0),fZDCCtime(0),fMuSigma0(0),fMuSigma1(0),fRabs1(0),fRabs2(0),fTheta(0),fHelicityTheta(0),fCollinTheta(0),fPhi(0),fHelicityPhi(0),fCollinPhi(0)
   {
     // default constructor, don't allocate memory here!
@@ -77,7 +77,7 @@ Polarization::Polarization() : AliAnalysisTaskSE(),
   }
 //_____________________________________________________________________________
 Polarization::Polarization(const char* name) : AliAnalysisTaskSE(name),
-    fAOD(0), fOutputList(0), fHistPt(0),fHistP_TPC(0), fTreeP_TPC(0),fPt(0),fM(0),fPt0(0),fPt1(0) ,fPIDResponse(0),fKaonSigma0(0),fKaonSigma1(0),fPiSigma0(0),
+    fAOD(0), fOutputList(0), fHistPt(0),fHistP_TPC(0), fTree(0),fPt(0),fM(0),fPt0(0),fPt1(0) ,fPIDResponse(0),fKaonSigma0(0),fKaonSigma1(0),fPiSigma0(0),
     fPiSigma1(0), fTPCcluster1(0), fEta1(0),fTPCcluster2(0), fEta2(0),fHistEtaCut(0),fHistITS(0), fHistChargeCut(0),fHistPtCut(0),fHistPairCut(0),fHistPIDCut(0),
     fHistFilterbitCut(0),fHistTriggerCut(0),fHistCounter(0) ,fDCAxy1(0),fDCAz1(0),fDCAxy2(0),fDCAz2(0),fTriggerClass(0),fdEdX(0),fPd(0),fPp(0),fPtd(0),fZDCdata(0), fZNAenergy(0), fZNCenergy(0),fZDCAtime(0),fZDCCtime(0),fMuSigma0(0),fMuSigma1(0),fRabs1(0), fRabs2(0),fTheta(0),fHelicityTheta(0),fCollinTheta(0),fPhi(0),fHelicityPhi(0),fCollinPhi(0)
   {
@@ -131,48 +131,48 @@ void Polarization::UserCreateOutputObjects()
     fHistP_TPC = new TH2F ("fHistP_TPC","fHistP_TPC",100,0,1,100,0,0.001);       // your histogram in the output file, add it to the list!
     fOutputList->Add(fHistP_TPC);
      
-    fTreeP_TPC = new TTree("scatterplot","Momentum and TPC signal");
-    fTreeP_TPC->Branch("fPt", &fPt, "fPt/F");
-    fTreeP_TPC->Branch("fTheta", &fTheta, "fTheta/F");
-    fTreeP_TPC->Branch("fHelicityTheta", &fHelicityTheta, "fHelicityTheta/F");
-    fTreeP_TPC->Branch("fCollinTheta", &fCollinTheta, "fCollinTheta/F");
+    fTree = new TTree("scatterplot","Momentum and TPC signal");
+    fTree->Branch("fPt", &fPt, "fPt/F");
+    fTree->Branch("fTheta", &fTheta, "fTheta/F");
+    fTree->Branch("fHelicityTheta", &fHelicityTheta, "fHelicityTheta/F");
+    fTree->Branch("fCollinTheta", &fCollinTheta, "fCollinTheta/F");
     
-    fTreeP_TPC->Branch("fPhi", &fPhi, "fPhi/F");
-    fTreeP_TPC->Branch("fHelicityPhi", &fHelicityPhi, "fHelicityPhi/F");
-    fTreeP_TPC->Branch("fCollinPhi", &fCollinPhi, "fCollinPhi/F");
+    fTree->Branch("fPhi", &fPhi, "fPhi/F");
+    fTree->Branch("fHelicityPhi", &fHelicityPhi, "fHelicityPhi/F");
+    fTree->Branch("fCollinPhi", &fCollinPhi, "fCollinPhi/F");
     
-    fTreeP_TPC->Branch("fM", &fM, "fM/F");
-    fTreeP_TPC->Branch("fPt0", &fPt0, "fPt0/F");
-    fTreeP_TPC->Branch("fPt1", &fPt1, "fPt1/F"); 
-   // fTreeP_TPC->Branch("fKaonSigma0", &fKaonSigma0, "fKaonSigma0/F");
-    //fTreeP_TPC->Branch("fKaonSigma1", &fKaonSigma1, "fKaonSigma1/F");
-  //   fTreeP_TPC->Branch("fPiSigma0", &fPiSigma0, "fPiSigma0/F");
-   // fTreeP_TPC->Branch("fPiSigma1", &fPiSigma1, "fPiSigma1/F");
-    fTreeP_TPC->Branch("fMuSigma0", &fMuSigma0, "fMuSigma0/F");
-    fTreeP_TPC->Branch("fMuSigma1", &fMuSigma1, "fMuSigma1/F");
-    //fTreeP_TPC->Branch("fTPCcluster1", &fTPCcluster1, "fTPCcluster1/F");
-    fTreeP_TPC->Branch("fEta1", &fEta1, "fEta1/F");
-  //  fTreeP_TPC->Branch("fTPCcluster2", &fTPCcluster2, "fTPCcluster2/F");
-    fTreeP_TPC->Branch("fEta2", &fEta2, "fEta2/F");
-    fTreeP_TPC->Branch("fDCAxy1", &fDCAxy1, "fDCAxy1/F");
-     fTreeP_TPC->Branch("fDCAxy2", &fDCAxy2, "fDCAxy2/F");
-    fTreeP_TPC->Branch("fDCAz1", &fDCAz1, "fDCAz1/F");
-    fTreeP_TPC->Branch("fDCAz2", &fDCAz2, "fDCAz2/F");
-    fTreeP_TPC->Branch("fTriggerClass", &fTriggerClass,"fTriggerClass/I");
-    fTreeP_TPC->Branch("fPp", &fPp, "fPp/F");
-    fTreeP_TPC->Branch("fPt0", &fPd, "fPd/F");
-    fTreeP_TPC->Branch("fPtd", &fPtd, "fPtd/F");
-   // fTreeP_TPC->Branch("fdEdX", &fdEdX, "fdEdX/F");
-    fTreeP_TPC->Branch("fZNAenergy", &fZNAenergy, "fZNAenergy/F"); 
-    fTreeP_TPC->Branch("fZNCenergy", &fZNCenergy, "fZNCenergy/F");
-    fTreeP_TPC->Branch("fZDCAtime", &fZDCAtime, "fZDCAtime/F");
-    fTreeP_TPC->Branch("fZDCCtime", &fZDCCtime, "fZDCCtime/F");
-  //  fTreeP_TPC->Branch("fHistCounter", &fHistCounter, "fHistCounter/I");
+    fTree->Branch("fM", &fM, "fM/F");
+    fTree->Branch("fPt0", &fPt0, "fPt0/F");
+    fTree->Branch("fPt1", &fPt1, "fPt1/F"); 
+   // fTree->Branch("fKaonSigma0", &fKaonSigma0, "fKaonSigma0/F");
+    //fTree->Branch("fKaonSigma1", &fKaonSigma1, "fKaonSigma1/F");
+  //   fTree->Branch("fPiSigma0", &fPiSigma0, "fPiSigma0/F");
+   // fTree->Branch("fPiSigma1", &fPiSigma1, "fPiSigma1/F");
+    fTree->Branch("fMuSigma0", &fMuSigma0, "fMuSigma0/F");
+    fTree->Branch("fMuSigma1", &fMuSigma1, "fMuSigma1/F");
+    //fTree->Branch("fTPCcluster1", &fTPCcluster1, "fTPCcluster1/F");
+    fTree->Branch("fEta1", &fEta1, "fEta1/F");
+  //  fTree->Branch("fTPCcluster2", &fTPCcluster2, "fTPCcluster2/F");
+    fTree->Branch("fEta2", &fEta2, "fEta2/F");
+    fTree->Branch("fDCAxy1", &fDCAxy1, "fDCAxy1/F");
+     fTree->Branch("fDCAxy2", &fDCAxy2, "fDCAxy2/F");
+    fTree->Branch("fDCAz1", &fDCAz1, "fDCAz1/F");
+    fTree->Branch("fDCAz2", &fDCAz2, "fDCAz2/F");
+    fTree->Branch("fTriggerClass", &fTriggerClass,"fTriggerClass/I");
+    fTree->Branch("fPp", &fPp, "fPp/F");
+    fTree->Branch("fPt0", &fPd, "fPd/F");
+    fTree->Branch("fPtd", &fPtd, "fPtd/F");
+   // fTree->Branch("fdEdX", &fdEdX, "fdEdX/F");
+    fTree->Branch("fZNAenergy", &fZNAenergy, "fZNAenergy/F"); 
+    fTree->Branch("fZNCenergy", &fZNCenergy, "fZNCenergy/F");
+    fTree->Branch("fZDCAtime", &fZDCAtime, "fZDCAtime/F");
+    fTree->Branch("fZDCCtime", &fZDCCtime, "fZDCCtime/F");
+  //  fTree->Branch("fHistCounter", &fHistCounter, "fHistCounter/I");
     
     PostData(1, fOutputList);           
    
   
-    PostData(2,fTreeP_TPC);
+    PostData(2,fTree);
   }
 //_____________________________________________________________________________
 void Polarization::UserExec(Option_t *)
@@ -280,7 +280,7 @@ void Polarization::UserExec(Option_t *)
           
             }
        //end of for loop j tracks*/
-       //fTreeP_TPC ->Fill();
+       //fTree ->Fill();
       }//end of for loop i tracks
       //Selecting tracks with only 1 pair of tracks
       if (PairCounter!=1)  return;
@@ -345,9 +345,9 @@ void Polarization::UserExec(Option_t *)
       fEta1 = savetrack1->Eta();
       fTPCcluster2 = savetrack2->GetTPCNcls();
       fEta2 = savetrack2->Eta();
-      fTreeP_TPC ->Fill();                                // continue until all the tracks are processed
+      fTree ->Fill();                                // continue until all the tracks are processed
       PostData(1, fOutputList);                           // stream the results the analysis of this event to
-      PostData (2,fTreeP_TPC);                            // the output manager which will take care of writing
+      PostData (2,fTree);                            // the output manager which will take care of writing
                                                           // it to a file
   
       }
