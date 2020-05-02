@@ -16,7 +16,18 @@ tree = list.FindObject("scatterplot")
 tree.SetMarkerStyle(3)
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-##Defining canvas here>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+##Defining crystalball function>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+def cball(x,par):
+  A = x-par[0]
+  B = 1/(math.sqrt(2)*math.pi*par[1])
+  C= exp(-(A*A)/(2*par[1]*par[1]))
+
+
+
+
+
+
+
 def bwig(x,par):
 
 	arg1 = 14.0/22.0 #2 over pi
