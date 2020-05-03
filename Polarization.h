@@ -79,6 +79,13 @@ class Polarization : public AliAnalysisTaskSE
          
         Float_t                 fZDCAtime;
         Float_t                 fZDCCtime;
+        
+        
+        
+         TLorentzVector daughter1;
+         TLorentzVector daughter2; 
+         TLorentzVector parent;
+   
         Polarization(const Polarization&); // not implemented
         Polarization& operator=(const Polarization&); // not implemented
 
