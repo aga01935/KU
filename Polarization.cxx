@@ -258,11 +258,11 @@ void Polarization::UserExec(Option_t *)
         else  {GoodTracks = kFALSE;}
         if (GoodTracks == kFALSE) fHistCounter->Fill(3);//continue; 
          
-           
+        if (track->Pt()>1) continue;           
       
-          if (track->Eta()>-2.5||track->Eta()<-4) fHistCounter->Fill(4);//continue;
+        if (track->Eta()>-2.5||track->Eta()<-4) continue; //fHistCounter->Fill(4);//continue;
         
-          if (17.5>fRabs1||fRabs1>89.5) fHistCounter->Fill(5);//continue;
+        if (17.5>fRabs1||fRabs1>89.5) continue;//fHistCounter->Fill(5);//continue;
           
           
           
@@ -286,6 +286,7 @@ void Polarization::UserExec(Option_t *)
               if(track2->HasPointOnITSLayer(0) || track2->HasPointOnITSLayer(1)) {GoodTracks2 = kTRUE;}
               else { GoodTracks2 = kFALSE ;}
               if (GoodTracks2 == kFALSE)   fHistCounter-> Fill(6);// continue;
+              if (track2->Pt()>1) continue;
               //  
               if (track2->Eta()>-2.5||track2->Eta()<-4) continue;
               if (17.5>fRabs2||fRabs2>89.5) continue;
@@ -364,11 +365,10 @@ void Polarization::UserExec(Option_t *)
       TLorentzVector p = d1+d2;
       
       p = parent;
-     fPt = p.Pt();
+      fPt = p.Pt();
       fM =  p.M(); 
       if (p.Rapidity()>-2.5||p.Rapidity()<-4.0) return;//fHistCounter->Fill(15);  
-      if (fPt>0.25) fHistCounter->Fill(16);
-      
+      if (fPt>0.25) fHistCounter->Fill(16) return;      
       
       
       
