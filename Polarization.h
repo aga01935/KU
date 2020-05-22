@@ -6,7 +6,8 @@
 #define Polarization_H
 
 #include "AliAnalysisTaskSE.h"
-
+//including this from the code /* $Id: AliAnalysisMuonUtility.cxx 47782 2011-02-24 18:37:31Z martinez $ */
+class     AliMuonTrackCuts;
 class Polarization : public AliAnalysisTaskSE  
 {
     public:
@@ -20,9 +21,9 @@ class Polarization : public AliAnalysisTaskSE
         
         
         
-        //these are implemented using simone's methode
+        //these are implemented /* $Id: AliAnalysisMuonUtility.cxx 47782 2011-02-24 18:37:31Z martinez $ */
         
-                                                       
+      AliMuonTrackCuts* 		fMuonTrackCuts;                                                  
                                                        
     
                                                        
@@ -64,13 +65,20 @@ class Polarization : public AliAnalysisTaskSE
       //  TH1I*                   fHistPIDCut;
       //  TH1I*                   fHistFilterbitCut;
       //  TH1I*                   fHistTriggerCut;
+        TH1D*                     fHistRunCounter;
+        TH1D*                     fHistCMUPTriggers;
+        TH1D*                     fHistCMUP6Triggers;
+        TH1D*                     fHistCMUP10Triggers;
+        TH1D*                     fHistCMUP11Triggers;
+        TH1D*                     fHistCMUP13Triggers;
+        TH1D*                     fHistCMUP26Triggers;
+        TH1I*                     fHistCounter; 
         
-        TH1I*                   fHistCounter; 
-     //   TH1F*                   fHistPt;        //! dummy histogram
-        TH2F*                   fHistP_TPC;
+        
+
                           
        // Float_t                 fPt;
-          Float_t                 fM;
+          Float_t                 fMass_mumu_Pair;
       //  Float_t                 fPt0;
       //  Float_t                 fPt1;
        // Float_t                 fPt1;
@@ -110,6 +118,12 @@ class Polarization : public AliAnalysisTaskSE
          
         Float_t                 fZDCAtime;
         Float_t                 fZDCCtime;
+        Int_t                   fRunNumber;
+        Int_t                   fCharge_Track1;
+        Int_t                   fCharge_Track2;
+        //Bool_t                  fV0Hits[64];
+        Int_t                   fgoodtracks;
+        
         
         
         

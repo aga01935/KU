@@ -61,6 +61,11 @@
 #include "Polarization.h"
 #include "AliPIDResponse.h"
 #include "TMath.h"
+#include "AliMuonTrackCuts.h"
+#include "AliAODVertex.h"
+
+
+
 
 class Polarization;    
 using namespace std;            
@@ -69,15 +74,15 @@ ClassImp(Polarization) // classimp: necessary for root
 
 
 Polarization::Polarization() : AliAnalysisTaskSE(), 
-    fAOD(0), fOutputList(0), fHistP_TPC(0), fTree(0),fM(0),fHistCounter(0),fDCAxy1(0),fDCAxy2(0),fDCAz1(0),fDCAz2(0) , fTriggerClass(0),fZDCdata(0),fZNAenergy(0), fZNCenergy(0),fZDCAtime(0),fZDCCtime(0),fRabs1(0),fRabs2(0),fTheta(0),fHelicityTheta(0),fCollinTheta(0),fPhi(0),fHelicityPhi(0),fCollinPhi(0), daughter1(0.,0.,0.,0.), daughter2(0.,0.,0.,0.) , parent(0.,0.,0.,0.)
+    fAOD(0), fOutputList(0), fTree(0),fMass_mumu_Pair(0),fHistCounter(0),fDCAxy1(0),fDCAxy2(0),fDCAz1(0),fDCAz2(0) , fTriggerClass(0),fZDCdata(0),fZNAenergy(0), fZNCenergy(0),fZDCAtime(0),fZDCCtime(0),fRabs1(0),fRabs2(0),fTheta(0),fHelicityTheta(0),fCollinTheta(0),fPhi(0),fHelicityPhi(0),fCollinPhi(0), daughter1(0.,0.,0.,0.), daughter2(0.,0.,0.,0.) , parent(0.,0.,0.,0.), fHistRunCounter(0),fRunNumber(0),fHistCMUPTriggers(0),fHistCMUP6Triggers(0),fHistCMUP10Triggers(0),fHistCMUP11Triggers(0),fHistCMUP13Triggers(0),fHistCMUP26Triggers(0),fCharge_Track1(0),fCharge_Track2(0),fMuonTrackCuts(0x0),fgoodtracks(0)
   {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
   }
 //_____________________________________________________________________________
 Polarization::Polarization(const char* name) : AliAnalysisTaskSE(name),
-    fAOD(0), fOutputList(0),fHistP_TPC(0), fTree(0),fM(0),fHistCounter(0) ,fDCAxy1(0),fDCAz1(0),fDCAxy2(0),fDCAz2(0),fTriggerClass(0),fZDCdata(0), fZNAenergy(0), fZNCenergy(0),fZDCAtime(0),fZDCCtime(0),fRabs1(0), fRabs2(0),fTheta(0),fHelicityTheta(0),fCollinTheta(0),fPhi(0),fHelicityPhi(0),fCollinPhi(0), daughter1(0.,0.,0.,0.), daughter2(0.,0.,0.,0.) , parent(0.,0.,0.,0.)
-  {
+    fAOD(0), fOutputList(0), fTree(0),fMass_mumu_Pair(0),fHistCounter(0) ,fDCAxy1(0),fDCAz1(0),fDCAxy2(0),fDCAz2(0),fTriggerClass(0),fZDCdata(0), fZNAenergy(0), fZNCenergy(0),fZDCAtime(0),fZDCCtime(0),fRabs1(0), fRabs2(0),fTheta(0),fHelicityTheta(0),fCollinTheta(0),fPhi(0),fHelicityPhi(0),fCollinPhi(0), daughter1(0.,0.,0.,0.), daughter2(0.,0.,0.,0.) , parent(0.,0.,0.,0.), fHistRunCounter(0),fRunNumber(0),fHistCMUPTriggers(0),fHistCMUP6Triggers(0),fHistCMUP10Triggers(0),fHistCMUP11Triggers(0),fHistCMUP13Triggers(0),fHistCMUP26Triggers(0),fCharge_Track1(0),fCharge_Track2(0),fMuonTrackCuts(0x0),fgoodtracks(0)
+{
     
     
     // constructor
@@ -88,17 +93,25 @@ Polarization::Polarization(const char* name) : AliAnalysisTaskSE(name),
                                         // you can add more output objects by calling DefineOutput(2, classname::Class())
                                         // if you add more output objects, make sure to call PostData for all of them, and to
                                         // make changes to your AddTask macro!
-   DefineOutput(2, TTree::Class());
+    DefineOutput(2, TTree::Class());
   }
 //_____________________________________________________________________________
 Polarization::~Polarization()
  {
   // destructor
-  if(fOutputList) 
-    {
+    if(fOutputList) 
+      {
   
-    delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
-    }
+      delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
+      }
+      
+   if(fMuonTrackCuts) 
+      {
+  
+      delete fMuonTrackCuts;     // at the end of your task, it is deleted from memory by calling this function
+      }
+      
+      
  }
 
 
@@ -119,22 +132,41 @@ void Polarization::UserCreateOutputObjects()
      }
    
   }*/
+  
+  // these are form evgeny it is implemented in multiple muon analysis so I plan to implement it. The only problem I faced is that my code could not find the AliMuonTrackCuts header file even after updating my AliPhysics, I fixed by copying the header files to my working directory
+  
+    fMuonTrackCuts = new AliMuonTrackCuts("StdMuonCuts", "StdMuonCuts");
+    fMuonTrackCuts->SetFilterMask(AliMuonTrackCuts::kMuEta | AliMuonTrackCuts::kMuPdca | AliMuonTrackCuts::kMuMatchLpt);	
+    fMuonTrackCuts->SetAllowDefaultParams(kTRUE);
+    fMuonTrackCuts->Print("mask");
     
     
     fOutputList = new TList();          
     fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them
                                           // if requested (dont worry about this now)
   
-      // example of a histogram
-  //  fHistPt = new TH1F("fHistPt", "fHistPt", 100, 0, 10);       
-   // fOutputList->Add(fHistPt);  
-    fHistCounter = new TH1I("fHistCounter","Histogram of Counter",40,0,40);  
-    fOutputList->Add(fHistCounter);                              
-    
-    
-    //fHistP_TPC = new TH2F ("fHistP_TPC","fHistP_TPC",100,0,1,100,0,0.001);       // your histogram in the output file, add it to the list!
-    //fOutputList->Add(fHistP_TPC);
      
+    fHistCounter = new TH1I("fHistCounter","Histogram of Counter",40,0,40);
+      
+    fOutputList->Add(fHistCounter);                              
+    fHistRunCounter = new TH1D("fHistRunCounter","Counter", 70000, 240000.5, 310000.5);
+    fOutputList->Add(fHistRunCounter);
+   
+   
+    fHistCMUPTriggers= (TH1D*)fHistRunCounter->Clone("fHistCMUPTriggers");
+    fHistCMUP6Triggers= (TH1D*)fHistRunCounter->Clone("fHistCMUP6Triggers");
+    fHistCMUP10Triggers= (TH1D*)fHistRunCounter->Clone("fHistCMUP10Triggers");
+    fHistCMUP11Triggers= (TH1D*)fHistRunCounter->Clone("fHistCMUP11Triggers");
+    fHistCMUP13Triggers= (TH1D*)fHistRunCounter->Clone("fHistCMUP13Triggers");
+    fHistCMUP26Triggers= (TH1D*)fHistRunCounter->Clone("fHistCMUP26Triggers");
+    fOutputList->Add(fHistCMUPTriggers); 
+    fOutputList->Add(fHistCMUP6Triggers);
+    fOutputList->Add(fHistCMUP10Triggers);
+    fOutputList->Add(fHistCMUP11Triggers);
+    fOutputList->Add(fHistCMUP13Triggers);
+    fOutputList->Add(fHistCMUP26Triggers);
+        
+        
    //Defining the tree branches to fill therequired information.
    //
    
@@ -155,7 +187,10 @@ void Polarization::UserCreateOutputObjects()
     fTree->Branch("fHelicityPhi", &fHelicityPhi, "fHelicityPhi/F");
     fTree->Branch("fCollinPhi", &fCollinPhi, "fCollinPhi/F");
     
-    fTree->Branch("fM", &fM, "fM/F");
+    fTree->Branch("fMass_mumu_Pair", &fMass_mumu_Pair, "fMass_mumu_Pair/F");
+    
+    
+    
     
   
     fTree->Branch("fDCAxy1", &fDCAxy1, "fDCAxy1/F");
@@ -167,6 +202,12 @@ void Polarization::UserCreateOutputObjects()
     fTree->Branch("fZNCenergy", &fZNCenergy, "fZNCenergy/F");
     fTree->Branch("fZDCAtime", &fZDCAtime, "fZDCAtime/F");
     fTree->Branch("fZDCCtime", &fZDCCtime, "fZDCCtime/F");
+    
+    fTree->Branch("fCharge_Track1", &fCharge_Track1,"fCharge_Track1/I");
+    fTree->Branch("fCharge_Track2", &fCharge_Track2,"fCharge_Track2/I");
+    fTree->Branch("fRunNumber", &fRunNumber,"fRunNumber/I");
+    fTree->Branch("fgoodtracks", &fgoodtracks,"fgoodtracks/I");
+    
 
     
     PostData(1, fOutputList);           
@@ -188,49 +229,105 @@ void Polarization::UserExec(Option_t *)
  
      fAOD = dynamic_cast<AliAODEvent*>(InputEvent());    
      if(!fAOD) return;                                  
-       
+     fRunNumber = fAOD ->GetRunNumber();  
+     AliVVZERO *fV0data = fAOD->GetVZEROData();
+     AliVAD *fADdata = fAOD->GetADData();
+     AliVVZERO *dataVZERO = dynamic_cast<AliVVZERO*>(fAOD->GetVZEROData());
+     
+     
+     
+   //  Int_t //bincounter =0;
+     
+     
      fHistCounter->Fill(0);
      fHistCounter->GetXaxis()->SetBinLabel(1,"Events");
+    // //bincounter++;
        
+    
+   
+   
+   
      TString trigger = fAOD-> GetFiredTriggerClasses();
-    // cout<<trigger<<endl;
-  //   if (trigger.Contains("CCUP8")) return; 
-    // cout<< "trigger classes are " << trigger << endl; return;  
+    
      if (!trigger.Contains("CMUP"))  return;
      
-     // cout<< "trigger classes are " << trigger << endl; //return;
      
-         fHistCounter->Fill(1);
-         fHistCounter->GetXaxis()->SetBinLabel(2,"CMUP_Trigger");
+     fHistCMUPTriggers->Fill(fRunNumber);
      
+     
+     
+     fHistCounter->Fill(1);
+     fHistCounter->GetXaxis()->SetBinLabel(2,"CMUP_Trigger");
+     
+  
      if (trigger.Contains("CMUP10")){
             fTriggerClass =10; fHistCounter->Fill(30);
             fHistCounter->GetXaxis()->SetBinLabel(31,"CMUP10");
-             PostData (2,fTree);
+            fHistCMUP10Triggers->Fill(fRunNumber);
+             
                               }
      if (trigger.Contains("CMUP11")){
          fTriggerClass =11;
          fHistCounter->Fill(31);
          fHistCounter->GetXaxis()->SetBinLabel(32,"CMUP11");
-          PostData (2,fTree);
+         fHistCMUP11Triggers->Fill(fRunNumber); 
          } 
          
      if  (trigger.Contains("CMUP13")){
          fTriggerClass =13; fHistCounter->Fill(32);
          fHistCounter->GetXaxis()->SetBinLabel(33,"CMUP13");
-          PostData (2,fTree);
+         
+         fHistCMUP13Triggers->Fill(fRunNumber);
          }  
      if  (trigger.Contains("CMUP26")){
          fTriggerClass =26; fHistCounter->Fill(33);
          fHistCounter->GetXaxis()->SetBinLabel(34,"CMUP26");
-          PostData (2,fTree);
+         fHistCMUP26Triggers->Fill(fRunNumber);
+         
          }
      if  (trigger.Contains("CMUP6")){
          fTriggerClass =6; fHistCounter->Fill(34);
          fHistCounter->GetXaxis()->SetBinLabel(35,"CMUP6");
-         PostData (2,fTree);
+         fHistCMUPTriggers->Fill(fRunNumber);
          }  
-           
+         
+         
+         
+         
+         
+    Int_t fV0Adecision = fV0data->GetV0ADecision();
+    Int_t fV0Cdecision = fV0data->GetV0CDecision();
+    if( fV0Adecision != 0 || fV0Cdecision != 0) return;
+    fHistCounter->Fill(2);
+       fHistCounter->GetXaxis()->SetBinLabel(3,"V0Decision");
+     
+    
+    
+    Int_t fADAdecision = fADdata->GetADADecision();
+    Int_t fADCdecision = fADdata->GetADCDecision();
+    if( fADAdecision != 0 || fADCdecision != 0) return;
+    fHistCounter->Fill(3);
+    fHistCounter->GetXaxis()->SetBinLabel(4,"AD decision");
+      
+    Bool_t fV0Hits[64];
+    Int_t fV0TotalNCells = 0;
+    for(Int_t iV0Hits = 0; iV0Hits < 64; iV0Hits++) {
+       
+        fV0Hits[iV0Hits] = dataVZERO->GetBBFlag(iV0Hits);
+          
+          if(fV0Hits[iV0Hits] == kTRUE) {
+                // if(iV0Hits < 32) fV0TotalNCells += fV0Hits[iV0Hits];
+                if(iV0Hits < 32) fV0TotalNCells += 1;
+          }
+          // std::cout << "fV0Hits[iV0Hits = " << iV0Hits << ", fRunNum=" << fRunNum << "] = " << fV0Hits[iV0Hits] << endl;
+          // std::cout << "fV0TotalNCells (fRunNum = " << fRunNum << ") = " << fV0TotalNCells << endl;
+    }
+    
+    if(fV0TotalNCells>2) return;
+    
+    fHistCounter->Fill(4);
+    fHistCounter->GetXaxis()->SetBinLabel(5,"fV0TotalNCells<2"); 
+             
     // cout<<trigger<<endl;     
     
       AliAODZDC *fZDCdata = fAOD->GetZDCData();
@@ -247,33 +344,36 @@ void Polarization::UserExec(Option_t *)
   
     // fHistCounter->Fill(2);            
      Int_t iTracks(fAOD->GetNumberOfTracks()); // see how many tracks there are in the event
-     Int_t PairCounter = 0;
+     Int_t PairCounter = 0;   // coun the number of pairs 
      
      AliAODTrack* savetrack1;
      AliAODTrack* savetrack2;
      
-     
-   //  cout << "reading event"<<iTracks<<endl;
+    
+    
      for(Int_t i(0); i < iTracks; i++) 
       { 
-     //  cout<<"entering track loops"<<i<<endl;
-      
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));                // loop ove rall these tracks
-      
-      
-      
-       // if(!track) cout << "no track found use AliAODnanotrack"<<endl; continue;
-        
-        cout<<"found some tracks"<<track->Pt()<<endl;
         
         fRabs1 = track->GetRAtAbsorberEnd();
-      
+        if(!track->IsMuonTrack()) continue;
+              fHistCounter->Fill(5);
+              fHistCounter->GetXaxis()->SetBinLabel(6,"MuonTrack");
+              ////bincounter++;
+              
+              
+              
+              if(fMuonTrackCuts->IsSelected(track)) {cout<<"found some tracks"<<endl; fgoodtracks = 1;}
+            //  if(!fMuonTrackCuts->IsSelected(track)) cout<<"there is no good tracks"<<endl; fgoodtracks =-999;
+               
+              fHistCounter->Fill(6);
+              fHistCounter->GetXaxis()->SetBinLabel(7,"GoodMuonTrack");
+             // //bincounter++;      
         
           
           
         
-        
-        
+           
                   
           for (Int_t j=i+1 ; j<iTracks ; j++) {
             //cout<<"entering track loops"<<endl;
@@ -282,7 +382,7 @@ void Polarization::UserExec(Option_t *)
               
               fRabs2 = track2->GetRAtAbsorberEnd();
               
-        
+           
               
                         
       
@@ -290,28 +390,33 @@ void Polarization::UserExec(Option_t *)
         
         
         
-       
+              
+            
+              
          
               if (track->Pt()>1) continue;
               
               if (track2->Pt()>1) continue;  
               
-              fHistCounter->Fill(3);
-              fHistCounter->GetXaxis()->SetBinLabel(4,"Pt_track<1");
+              fHistCounter->Fill(7);
+              fHistCounter->GetXaxis()->SetBinLabel(8,"Pt_track<1");
+             // //bincounter++;
               //cout<< track2->Pt()<<endl;
         
               
               
               if (track->Eta()>-2.5||track->Eta()<-4) continue; //fHistCounter->Fill(4);//continue;
               if (track2->Eta()>-2.5||track2->Eta()<-4) continue;
-              fHistCounter->Fill(4);
-               fHistCounter->GetXaxis()->SetBinLabel(5,"eta_250_400");
+              fHistCounter->Fill(8);
+              fHistCounter->GetXaxis()->SetBinLabel(9,"eta_250_400");
+             
              
               if (17.5>fRabs1||fRabs1>89.5) continue;//fHistCounter->Fill(5);//continue;
               if (17.5>fRabs2||fRabs2>89.5) continue;
-              fHistCounter->Fill(5);
-              fHistCounter->GetXaxis()->SetBinLabel(6,"Rabs175_895");
-             
+              fHistCounter->Fill(9);
+              fHistCounter->GetXaxis()->SetBinLabel(10,"Rabs175_895");
+          
+            
              
              //some debuggers  to make sure the cut is working as I am little concerned they might not work
               if (track->Pt()>1) cout<<"pt cut in track 1 not working"<<endl;
@@ -335,23 +440,23 @@ void Polarization::UserExec(Option_t *)
              
              // i am braking it to make so that code do not run if pair is more than 1..
              // it makes code run faster 
-              if (PairCounter<1) break;     
-              
-            
-            
+          //    if (PairCounter>1) break;     
+            //  if (PairCounter>2)break;
+             
             
               }
        //end of for loop j tracks*/
-       
+      // //bincounter_preserve = //bincounter;
+      // //bincounter = //bincounter_diffuse;
       }//end of for loop i tracks
       //Selecting tracks with only 1 pair of tracks
-     
+    //  //bincounter = //bincounter_preserve;
      
       if (PairCounter!=1)  return;
       
-      fHistCounter->Fill(6);
-       fHistCounter->GetXaxis()->SetBinLabel(7,"Single_Pair");
-     
+      fHistCounter->Fill(10);
+      fHistCounter->GetXaxis()->SetBinLabel(11,"Single_Pair");
+         
      
      
       Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
@@ -372,40 +477,34 @@ void Polarization::UserExec(Option_t *)
       fDCAxy2= dca[0];      
       fDCAz2= dca[1];
       delete track2_clone;
+  /*   //i am not using this cut as pdca cut is applied in 
       if(TMath::Abs(dca[1]) > 2) return;
       
       
       //Charge Cut 
      fHistCounter->Fill(7);
      
-      fHistCounter->GetXaxis()->SetBinLabel(8,"DCA<2");
+     fHistCounter->Fill(//bincounter);
+     fHistCounter->GetXaxis()->SetBinLabel(//bincounter+1,"dca<2");
+     //bincounter++;
       
+      */
       if (savetrack1->Charge() * savetrack2->Charge()>= 0) return;
       
-     fHistCounter->Fill(8); 
-      fHistCounter->GetXaxis()->SetBinLabel(9,"OP_Charge");
       
-     // fHistCounter->Fill(10);   
-     // fPiSigma0=fPIDResponse->NumberOfSigmasTPC(savetrack1, AliPID::kPion);
-     // fPiSigma1=fPIDResponse->NumberOfSigmasTPC(savetrack2, AliPID::kPion);
-     // fKaonSigma0=fPIDResponse->NumberOfSigmasTPC(savetrack1, AliPID::kKaon);
-    //  fKaonSigma1=fPIDResponse->NumberOfSigmasTPC(savetrack2, AliPID::kKaon);
-    //  fMuSigma0=fPIDResponse->NumberOfSigmasTPC(savetrack1, AliPID::kMuon);
-   //   fMuSigma1=fPIDResponse->NumberOfSigmasTPC(savetrack2, AliPID::kMuon);
       
-  
-  
-    //  fHistCounter->Fill(11);
+     fHistCounter->Fill(11);
+     fHistCounter->GetXaxis()->SetBinLabel(12,"OP_Charge");
+    
       TLorentzVector d1;
       TLorentzVector d2; 
-      d1.SetPtEtaPhiM(savetrack1->Pt(),savetrack1->Eta(),savetrack1->Phi(),0.105);
-      d2.SetPtEtaPhiM(savetrack2->Pt(),savetrack2->Eta(),savetrack2->Phi(),0.105);
-     // fPt0 = d1.Pt();
-     // fPt1 = d2.Pt();
-      d1= daughter1;
-      d2= daughter2;
+      d1.SetPtEtaPhiM(savetrack1->Pt(),savetrack1->Eta(),savetrack1->Phi(),TDatabasePDG::Instance()->GetParticle(13)->Mass());
+      d2.SetPtEtaPhiM(savetrack2->Pt(),savetrack2->Eta(),savetrack2->Phi(),TDatabasePDG::Instance()->GetParticle(13)->Mass());
      
+      daughter1=d1;
+      daughter2=d2;
      
+    
            
       // cout<<"mass of track"<< track->M()<<endl; 
       
@@ -414,29 +513,35 @@ void Polarization::UserExec(Option_t *)
       TLorentzVector p = d1+d2;
       
      
-      p = parent;
+      parent = p;
    //   fPt = p.Pt();
-      fM =  p.M(); 
+      fMass_mumu_Pair=  p.M(); 
+     //  cout<<"mass of muon pair"<< fM <<endl;
       if (p.Rapidity()>-2.5||p.Rapidity()<-4.0) return;//fHistCounter->Fill(15);  
-      if (p.Rapidity()> -2.5) cout<<"this cut is not working"<<endl;
-      if (p.Rapidity()< -4) cout<<"this cut is not working"<<endl;
-      fHistCounter->Fill(9);
-      fHistCounter->GetXaxis()->SetBinLabel(10,"Parent_Rap");
+      if (p.Rapidity()> -2.5){ cout<<"this cut is not working"<<endl;}
+      if (p.Rapidity()< -4) { cout<<"this cut is not working"<<endl;}
+      fHistCounter->Fill(12);
+      fHistCounter->GetXaxis()->SetBinLabel(13,"Parent_Rap");
+      //bincounter++;
+      
+      
       if (p.Pt()>0.25)  return;      
-      fHistCounter->Fill(10);
-      fHistCounter->GetXaxis()->SetBinLabel(11,"Parent_Pt");
+      fHistCounter->Fill(13);
+      fHistCounter->GetXaxis()->SetBinLabel(14,"Parent_Pt");
+      //bincounter++;
       
       
       
       fPhi =  p.Phi();
+     fTheta = p.Theta();
+     fHelicityTheta= CosThetaHelicityFrame(d1,d2,p);
+     fCollinTheta= CosThetaCollinsSoper(d1,d2,p);
+      
+     fHelicityPhi= CosPhiHelicityFrame(d1,d2,p);
+     fCollinPhi=  CosPhiCollinsSoper(d1,d2,p);
      
-      fTheta = p.Theta();
-      
-      fHelicityTheta= CosThetaHelicityFrame(d1,d2,p);
-      fCollinTheta= CosThetaCollinsSoper(d1,d2,p);
-      
-      fHelicityPhi= CosPhiHelicityFrame(d1,d2,p);
-      fCollinPhi=  CosPhiCollinsSoper(d1,d2,p);
+     fCharge_Track1 = savetrack1->Charge();
+     fCharge_Track2 = savetrack2->Charge();
       
       
       
@@ -454,7 +559,7 @@ void Polarization::UserExec(Option_t *)
       fTree ->Fill();                                // continue until all the tracks are processed
       PostData(1, fOutputList);                           // stream the results the analysis of this event to
       PostData (2,fTree);                            // the output manager which will take care of writing
-                                                          // it to a file
+      //bincounter =0;                                                    // it to a file
   
       }
       
